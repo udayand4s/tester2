@@ -1,24 +1,45 @@
 "use client"
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Link from 'next/link'
 
 export default function SignupPage() {
+  const router= useRouter as any
   const [user, setUser]= React.useState({
     email:"",
     password:"",
     username:"",
   })
+  const [buttonDisabled, setButtonDisabled]= React.useState(false)
+  const [loading, setloading]= React.useState(false)
 
   const onSignup= async () => {
+    try {
+      setloading(true)
+      
+      const response= await axios.post("/api/users/signup", user)
+      console.log("signup sucess", response.data )
+      router.push("/login")
     
+    } catch (error) {
+        console.log("sign up failed", error)
+    } finally{
+      setloading(false)
+    }
   }
 
+  useEffect(() => {
+    if (user.email.length>0 && user.username.length>0 && user.password.length>0 ) {
+      setButtonDisabled(false)
+    } else {
+      setButtonDisabled(true)
+    }
+  }, [user])
   return(
     <div className="flex items-center justify-center min-h-screen bg-slate-900">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800">Sign Up</h2>
+        <h2 className="text-2xl font-bold text-center text-gray-800">{loading ? "Processing" : "Sign Up"}</h2>
         <form className="mt-6">
           {/* Username */}
           <div className="mb-4">
@@ -76,8 +97,7 @@ export default function SignupPage() {
             onClick={onSignup}
             className="w-full px-4 py-2 font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:ring-4
              focus:ring-blue-300">
-            
-            Sign Up
+            {buttonDisabled ? "..." : "Sign up"}
           </button>
         </form>
         <p className="mt-4 text-sm text-center text-gray-600">
